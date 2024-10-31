@@ -26,11 +26,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
@@ -49,12 +51,14 @@ import java.util.Date
 fun DayCard(
     day: WorkDay,
     weekOvertime: Int,
+    onEditRequest: (day: Date) -> Unit,
     modifier: Modifier = Modifier,
-    provisionalTime: Int = 2520000
+    provisionalTime: Int = 2520000,
+    initialMoreInfoExpanded: Boolean = false
 ) {
-    var previsionExpanded by remember { mutableStateOf(false) }
+    var moreInfoExpanded by remember { mutableStateOf(initialMoreInfoExpanded) }
     val rotation by animateFloatAsState(
-        targetValue = if (previsionExpanded) 180f else 0f, label = "",
+        targetValue = if (moreInfoExpanded) 180f else 0f, label = "",
         animationSpec = spring(
             dampingRatio = DampingRatioLowBouncy,
             stiffness = StiffnessLow
@@ -63,7 +67,7 @@ fun DayCard(
 
     Card(
         modifier = modifier.clickable {
-            previsionExpanded = !previsionExpanded
+            moreInfoExpanded = !moreInfoExpanded
         },
         elevation = CardDefaults.cardElevation(
             defaultElevation = 4.dp
@@ -123,14 +127,15 @@ fun DayCard(
             }
 
             AnimatedVisibility(
-                visible = previsionExpanded,
+                visible = moreInfoExpanded,
             ) {
                 HorizontalDivider()
                 DaySubRail(
                     day = day,
                     provisionalTime = provisionalTime,
                     weekOvertime = weekOvertime,
-                    modifier = Modifier.padding(8.dp)
+                    modifier = Modifier.padding(8.dp),
+                    onEditRequest = { onEditRequest(day.date) }
                 )
             }
 
@@ -148,10 +153,15 @@ fun DayCard(
 }
 
 @Composable
-fun DaySubRail(day: WorkDay, provisionalTime: Int, weekOvertime: Int, modifier: Modifier = Modifier) {
+fun DaySubRail(
+    day: WorkDay,
+    provisionalTime: Int,
+    weekOvertime: Int, modifier: Modifier = Modifier,
+    onEditRequest: () -> Unit = {},
+) {
 
     Column(
-        modifier = modifier
+        modifier = modifier.fillMaxWidth(),
     ) {
         if (!isDayFinished(day)) {
             Text(
@@ -170,6 +180,24 @@ fun DaySubRail(day: WorkDay, provisionalTime: Int, weekOvertime: Int, modifier: 
         if (isDayFinished(day)) {
             Text(stringResource(R.string.day_summary, getDaySummary(day)))
             Text(stringResource(R.string.overtime, getOvertime(day, provisionalTime)))
+        }
+
+        Row(
+            modifier = Modifier.align(Alignment.End)
+        ) {
+            TextButton(
+                onClick = { onEditRequest() },
+                modifier = Modifier
+            ) {
+                Text(stringResource(R.string.edit))
+            }
+
+            TextButton(
+                onClick = { /*TODO*/ },
+                modifier = Modifier
+            ) {
+                Text(stringResource(R.string.delete))
+            }
         }
     }
 }
@@ -207,7 +235,12 @@ fun getWeekOvertime(days: List<WorkDay>, provisionalTime: Int): String {
 
 
 @Composable
-fun DayCardList(days: List<WorkDay>, provisionalTime: Int, modifier: Modifier = Modifier) {
+fun DayCardList(
+    days: List<WorkDay>,
+    provisionalTime: Int,
+    onEditRequest: (day: Date) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val groupedDates = groupDatesByWeek(days)
 
     AnimatedVisibility(
@@ -239,6 +272,7 @@ fun DayCardList(days: List<WorkDay>, provisionalTime: Int, modifier: Modifier = 
                             day,
                             provisionalTime = provisionalTime,
                             weekOvertime = weekOvertime,
+                            onEditRequest = onEditRequest,
                             modifier = Modifier
                                 .padding(8.dp)
                                 .animateEnterExit(
@@ -264,7 +298,12 @@ fun DayCardList(days: List<WorkDay>, provisionalTime: Int, modifier: Modifier = 
 @Composable
 fun WorkDayPreview() {
     WorkingHoursTheme {
-        DayCard(WorkDay(Date(), Date(), Date(), Date(), Date()), weekOvertime = 0)
+        DayCard(
+            WorkDay(Date(), Date(), Date(), Date(), Date()),
+            weekOvertime = 0,
+            initialMoreInfoExpanded = true,
+            onEditRequest = {}
+        )
     }
 }
 
@@ -312,7 +351,8 @@ fun WorkDayList() {
                     Date(124, 4, 2, 13, 30, 0)
                 )
             ),
-            provisionalTime = 2520000
+            provisionalTime = 2520000,
+            onEditRequest = {}
         )
     }
 }

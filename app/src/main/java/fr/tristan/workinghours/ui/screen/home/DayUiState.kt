@@ -4,6 +4,7 @@ import java.util.Calendar
 import java.util.Date
 
 data class DayUiState(
+    val date : Date = Date(),
     val hour : String = "",
     val minute : String = "",
     val second : String = "",

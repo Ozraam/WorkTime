@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +37,7 @@ import fr.tristan.workinghours.R
 import fr.tristan.workinghours.data.WorkDay
 import fr.tristan.workinghours.ui.theme.WorkingHoursTheme
 import kotlinx.coroutines.launch
+import java.util.Date
 
 @Composable
 fun HomeScreen(
@@ -57,8 +57,7 @@ fun HomeScreen(
             AddFloatingActionButton(
                 onClick = {
                     addExpanded = true
-                    dayViewModel.setTimeToCurrent()
-                    dayViewModel.detectTypeOfHour()
+                    dayViewModel.setupUiForAdd()
                 }
             )
         }
@@ -82,15 +81,18 @@ fun HomeScreen(
                         weekOvertime = getWeekOvertimeInt(
                             getWeek(uiState.listOfDay.last(), uiState.listOfDay),
                             provisionalTime
-                        )
+                        ),
+                        onEditRequest = { day ->
+                            dayViewModel.setupUiForAddWithDate(day)
+                            addExpanded = true
+                        }
                     )
                 } else {
                     TodayAddNewHelper(
                         modifier = Modifier.padding(8.dp),
                         onClick = {
                             addExpanded = true
-                            dayViewModel.setTimeToCurrent()
-                            dayViewModel.detectTypeOfHour()
+                            dayViewModel.setupUiForAdd()
                         }
                     )
                 }
@@ -104,7 +106,11 @@ fun HomeScreen(
                 DayCardList(
                     days = uiState.listOfDay,
                     modifier = Modifier,
-                    provisionalTime = provisionalTime
+                    provisionalTime = provisionalTime,
+                    onEditRequest = { day ->
+                        dayViewModel.setupUiForAddWithDate(day)
+                        addExpanded = true
+                    }
                 )
             }
         }
@@ -158,7 +164,13 @@ fun getWeek(day: WorkDay, days: List<WorkDay>): List<WorkDay> {
 }
 
 @Composable
-fun TodayWorkDay(day: WorkDay, weekOvertime: Int, provisionalTime: Int, modifier: Modifier = Modifier) {
+fun TodayWorkDay(
+    day: WorkDay,
+    weekOvertime: Int,
+    provisionalTime: Int,
+    onEditRequest: (day: Date) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Column(modifier = modifier) {
         Text(
             stringResource(R.string.today_work_day),
@@ -168,7 +180,9 @@ fun TodayWorkDay(day: WorkDay, weekOvertime: Int, provisionalTime: Int, modifier
         DayCard(
             day = day,
             provisionalTime = provisionalTime,
-            weekOvertime = weekOvertime
+            weekOvertime = weekOvertime,
+            initialMoreInfoExpanded = true,
+            onEditRequest = onEditRequest
         )
     }
 }

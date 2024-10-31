@@ -54,7 +54,7 @@ class DayViewModel(
             initialValue = DayListUiState(listOf())
         )
 
-    fun setTimeToCurrent() {
+    private fun setTimeToCurrent() {
         val calendar = java.util.Calendar.getInstance()
 
         val hour = calendar.get(java.util.Calendar.HOUR_OF_DAY)
@@ -70,8 +70,8 @@ class DayViewModel(
         }
     }
 
-    fun detectTypeOfHour() {
-        val date = getCurrentDay()
+    private fun detectTypeOfHour() {
+        val date = normalizeDate(uiState.value.date)
 
         val workDay = dayListUiState.value.listOfDay.find { it.date == date }
         if (workDay == null) {
@@ -201,6 +201,16 @@ class DayViewModel(
         return Pair(workDay, isNewDay)
     }
 
+    private fun getWorkDayIfExistOrNewOne(date: Date) : Pair<WorkDay, Boolean> {
+        val day = dayListUiState.value.listOfDay.find { it.date == date }
+
+        val isNewDay = day == null
+
+        val workDay = day ?: WorkDay(date)
+
+        return Pair(workDay, isNewDay)
+    }
+
     private fun getCurrentDay(): Date {
         return normalizeDate(Date())
     }
@@ -215,14 +225,14 @@ class DayViewModel(
 
     suspend fun saveAnHour() {
         val dateAndType = uiState.value.toDate()
-        val (workDay, isNewDay) = getCurrentWorkDayIfExistOrNewOne()
+        val (workDay, isNewDay) = getWorkDayIfExistOrNewOne(normalizeDate(uiState.value.date))
 
         when (dateAndType.typeOfHour) {
             HourType.WORK_IN -> workDay.workIn = dateAndType.date
             HourType.WORK_OUT -> workDay.workOut = dateAndType.date
             HourType.LUNCH_IN -> workDay.lunchIn = dateAndType.date
             HourType.LUNCH_OUT -> {
-                sendLeaveNotification()
+                if(workDay.date == getCurrentDay()) sendLeaveNotification()
                 workDay.lunchOut = dateAndType.date
             }
         }
@@ -263,6 +273,35 @@ class DayViewModel(
 
     fun isNotificationEnabled(ctx: Context): Boolean {
         return isNotificationsGranted(ctx)
+    }
+
+    fun updateDate(selectedDateMillis: Long) {
+        this._uiState.update {
+            it.copy(
+                date = Date(selectedDateMillis)
+            )
+        }
+        detectTypeOfHour()
+    }
+
+    private fun resetDate() {
+        this._uiState.update {
+            it.copy(
+                date = Date()
+            )
+        }
+    }
+
+    fun setupUiForAdd() {
+        resetDate()
+        setTimeToCurrent()
+        detectTypeOfHour()
+    }
+
+    fun setupUiForAddWithDate(date: Date) {
+        updateDate(date.time)
+        setTimeToCurrent()
+        detectTypeOfHour()
     }
 }
 

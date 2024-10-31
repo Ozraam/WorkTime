@@ -34,4 +34,7 @@
     <string name="ask_for_notification_permission">You can turn notifications on to be alerted when you did your work time</string>
     <string name="enable">Enable notifications</string>
     <string name="today_add_new_helper">There is no work register for today yet.\nClick this card to add one !</string>
+    <string name="change_date">Change Date</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
 </resources>

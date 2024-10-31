@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">Working Hours</string>
+    <string name="app_description">Keep track of your working hours</string>
+    <string name="work_in">Work In : %s</string>
+    <string name="work_out">Work out : %s</string>
+    <string name="lunch_in">Lunch in : %s</string>
+    <string name="lunch_out">Lunch out : %s</string>
+    <string name="add_work_day">Add an hour</string>
+    <string name="add_hour_title">Add an hour</string>
+    <string name="time">Time</string>
+    <string name="hour">Hour</string>
+    <string name="minute">Minute</string>
+    <string name="second">Second</string>
+    <string name="type_of_hour">Type</string>
+    <string name="cancel">Cancel</string>
+    <string name="add">Add an hour</string>
+    <string name="week">Week - %s</string>
+    <string name="not_set">Not Set</string>
+    <string name="first_time_helper">Welcome to the application Working Hours.\nIn this app you can register your working time to keep track of how many hour you\'ve worked.\n\nTo get started, click on + button on the bottom right corner to register your first work in.\n\nThe other fonctionnality will be easy to understand, good luck !</string>
+    <string name="prevision">Prevision workout : %s</string>
+    <string name="day_summary">This day, you\'ve worked %s in total</string>
+    <string name="expand_prevision">Expand day card</string>
+    <string name="settings">Settings</string>
+    <string name="back">Return back</string>
+    <string name="provisional_work_time">Current Provisional work time : %s hours</string>
+    <string name="week_summary">This week you\'ve worked : %s hours</string>
+    <string name="confirm">Update</string>
+    <string name="today_work_day">Today\'s work day</string>
+    <string name="all_work_day">All work day</string>
+    <string name="overtime">This day, you\'ve done %s overtime</string>
+    <string name="week_overtime">This week, you\'ve done %s overtime</string>
+    <string name="min_prevision">Minimum Work out if you use overtime : %s</string>
+    <string name="time_to_go">Ding Dong ! It\'s time to leave your work place</string>
+    <string name="ask_for_notification_permission">You can turn notifications on to be alerted when you did your work time</string>
+    <string name="enable">Enable notifications</string>
+</resources>

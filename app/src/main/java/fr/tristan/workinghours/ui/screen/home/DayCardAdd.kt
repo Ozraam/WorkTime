@@ -16,6 +16,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -101,47 +102,15 @@ fun WorkHourAddScreen(
             Column(
                 modifier = Modifier.padding(8.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
+                DateSelector(
+                    datePickerExpanded,
+                    dateFormat, uiState,
+                    viewModel,
+                    datePickerState,
+                    onDismissRequest = { datePickerExpanded = false },
+                    onExpandRequest = { datePickerExpanded = true },
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    OutlinedButton(
-                        onClick = { datePickerExpanded = true },
-                        shape = RoundedCornerShape(5.dp),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = null
-                        )
-                        Text(dateFormat.format(uiState.date).replaceFirstChar { it.uppercase() })
-                    }
-                }
-
-                if(datePickerExpanded) {
-                    DatePickerDialog(
-                        onDismissRequest = { datePickerExpanded = false },
-                        confirmButton = {
-                            TextButton(
-                                onClick = {
-                                    datePickerExpanded = false
-                                    viewModel.updateDate(datePickerState.selectedDateMillis!!)
-                                }
-                            ) {
-                                Text(stringResource(R.string.confirm))
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = { datePickerExpanded = false }) {
-                                Text(stringResource(R.string.cancel))
-                            }
-                        }
-                    ) {
-                        DatePicker(
-                            state = datePickerState,
-                        )
-                    }
-                }
+                )
 
                 Spacer(
                     modifier = Modifier.padding(8.dp)
@@ -171,6 +140,61 @@ fun WorkHourAddScreen(
             }
         },
     )
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun DateSelector(
+    datePickerExpanded: Boolean,
+    dateFormat: SimpleDateFormat,
+    uiState: DayUiState,
+    viewModel: DayViewModel,
+    datePickerState: DatePickerState,
+    onDismissRequest: () -> Unit,
+    onExpandRequest: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+        modifier = modifier
+    ) {
+        OutlinedButton(
+            onClick = { onExpandRequest() },
+            shape = RoundedCornerShape(5.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Default.DateRange,
+                contentDescription = null
+            )
+            Text(dateFormat.format(uiState.date).replaceFirstChar { it.uppercase() })
+        }
+    }
+
+    if (datePickerExpanded) {
+        DatePickerDialog(
+            onDismissRequest = { onDismissRequest() },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDismissRequest()
+                        viewModel.updateDate(datePickerState.selectedDateMillis!!)
+                    }
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onDismissRequest() }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        ) {
+            DatePicker(
+                state = datePickerState,
+            )
+        }
+    }
 }
 
 @Composable

@@ -24,4 +24,7 @@ class WorkDayRepositoryFake(private var workdays: List<WorkDay>) : WorkDayReposi
     }
 
 
+    override suspend fun delete(workDay: WorkDay) {
+        workdays -= workDay
+    }
 }

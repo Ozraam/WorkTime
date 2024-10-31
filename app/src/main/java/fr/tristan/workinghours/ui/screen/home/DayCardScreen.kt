@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -52,9 +53,10 @@ fun DayCard(
     day: WorkDay,
     weekOvertime: Int,
     onEditRequest: (day: Date) -> Unit,
+    onDeleteRequest: (day: WorkDay) -> Unit,
     modifier: Modifier = Modifier,
     provisionalTime: Int = 2520000,
-    initialMoreInfoExpanded: Boolean = false
+    initialMoreInfoExpanded: Boolean = false,
 ) {
     var moreInfoExpanded by remember { mutableStateOf(initialMoreInfoExpanded) }
     val rotation by animateFloatAsState(
@@ -135,7 +137,8 @@ fun DayCard(
                     provisionalTime = provisionalTime,
                     weekOvertime = weekOvertime,
                     modifier = Modifier.padding(8.dp),
-                    onEditRequest = { onEditRequest(day.date) }
+                    onEditRequest = { onEditRequest(day.date) },
+                    onDeleteRequest = onDeleteRequest
                 )
             }
 
@@ -156,10 +159,12 @@ fun DayCard(
 fun DaySubRail(
     day: WorkDay,
     provisionalTime: Int,
+    onDeleteRequest: (day: WorkDay) -> Unit,
     weekOvertime: Int, modifier: Modifier = Modifier,
     onEditRequest: () -> Unit = {},
 ) {
-
+    var deleteConfirmation by remember { mutableStateOf(false) }
+    val dayFormat = SimpleDateFormat("EEEE, dd MMM yyyy")
     Column(
         modifier = modifier.fillMaxWidth(),
     ) {
@@ -193,10 +198,50 @@ fun DaySubRail(
             }
 
             TextButton(
-                onClick = { /*TODO*/ },
+                onClick = { deleteConfirmation = true },
                 modifier = Modifier
             ) {
                 Text(stringResource(R.string.delete))
+            }
+
+            if (deleteConfirmation) {
+                AlertDialog(
+                    onDismissRequest = { deleteConfirmation = false },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                deleteConfirmation = false
+                                onDeleteRequest(day)
+                            }
+                        ) {
+                            Text(stringResource(R.string.confirmation))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                deleteConfirmation = false
+                            }
+                        ) {
+                            Text(stringResource(R.string.cancel))
+                        }
+                    },
+                    title = {
+                        Text(
+                            stringResource(
+                                R.string.delete_day_title,
+                                dayFormat.format(day.date))
+                        )
+                    },
+                    text = {
+                        Text(
+                            stringResource(
+                                R.string.delete_day_text,
+                                dayFormat.format(day.date)
+                            )
+                        )
+                    }
+                )
             }
         }
     }
@@ -239,7 +284,8 @@ fun DayCardList(
     days: List<WorkDay>,
     provisionalTime: Int,
     onEditRequest: (day: Date) -> Unit,
-    modifier: Modifier = Modifier
+    onDeleteRequest: (day: WorkDay) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val groupedDates = groupDatesByWeek(days)
 
@@ -273,6 +319,8 @@ fun DayCardList(
                             provisionalTime = provisionalTime,
                             weekOvertime = weekOvertime,
                             onEditRequest = onEditRequest,
+                            onDeleteRequest = onDeleteRequest,
+
                             modifier = Modifier
                                 .padding(8.dp)
                                 .animateEnterExit(
@@ -302,7 +350,8 @@ fun WorkDayPreview() {
             WorkDay(Date(), Date(), Date(), Date(), Date()),
             weekOvertime = 0,
             initialMoreInfoExpanded = true,
-            onEditRequest = {}
+            onEditRequest = {},
+            onDeleteRequest = {}
         )
     }
 }
@@ -352,7 +401,8 @@ fun WorkDayList() {
                 )
             ),
             provisionalTime = 2520000,
-            onEditRequest = {}
+            onEditRequest = {},
+            onDeleteRequest = {}
         )
     }
 }

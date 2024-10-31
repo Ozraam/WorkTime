@@ -8,6 +8,8 @@ interface WorkDayRepository {
     suspend fun insert(workDay: WorkDay)
 
     suspend fun update(workDay: WorkDay)
+
+    suspend fun delete(workDay: WorkDay)
 }
 
 class OfflineWorkDayRepository(private val workDayDao: WorkDayDAO) : WorkDayRepository {
@@ -22,5 +24,10 @@ class OfflineWorkDayRepository(private val workDayDao: WorkDayDAO) : WorkDayRepo
     override suspend fun update(workDay: WorkDay) {
         workDayDao.update(workDay)
     }
+
+    override suspend fun delete(workDay: WorkDay) {
+        workDayDao.delete(workDay)
+    }
+
 
 }

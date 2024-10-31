@@ -303,6 +303,10 @@ class DayViewModel(
         setTimeToCurrent()
         detectTypeOfHour()
     }
+
+    suspend fun deleteWorkDay(workDay: WorkDay) {
+        workDayRepository.delete(workDay)
+    }
 }
 
 enum class HourType(val title: String) {

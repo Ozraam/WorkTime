@@ -85,6 +85,11 @@ fun HomeScreen(
                         onEditRequest = { day ->
                             dayViewModel.setupUiForAddWithDate(day)
                             addExpanded = true
+                        },
+                        onDeleteRequest = { day ->
+                            coroutineScope.launch {
+                                dayViewModel.deleteWorkDay(day)
+                            }
                         }
                     )
                 } else {
@@ -110,6 +115,11 @@ fun HomeScreen(
                     onEditRequest = { day ->
                         dayViewModel.setupUiForAddWithDate(day)
                         addExpanded = true
+                    },
+                    onDeleteRequest = { day ->
+                        coroutineScope.launch {
+                            dayViewModel.deleteWorkDay(day)
+                        }
                     }
                 )
             }
@@ -169,6 +179,7 @@ fun TodayWorkDay(
     weekOvertime: Int,
     provisionalTime: Int,
     onEditRequest: (day: Date) -> Unit,
+    onDeleteRequest: (day: WorkDay) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -182,7 +193,8 @@ fun TodayWorkDay(
             provisionalTime = provisionalTime,
             weekOvertime = weekOvertime,
             initialMoreInfoExpanded = true,
-            onEditRequest = onEditRequest
+            onEditRequest = onEditRequest,
+            onDeleteRequest = onDeleteRequest
         )
     }
 }

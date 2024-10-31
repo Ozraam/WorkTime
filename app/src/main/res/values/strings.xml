@@ -37,4 +37,7 @@
     <string name="change_date">Change Date</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+    <string name="confirmation">Confirm</string>
+    <string name="delete_day_title">Delete %s</string>
+    <string name="delete_day_text">Are you sure you want to delete %s, this cannot be reversed</string>
 </resources>

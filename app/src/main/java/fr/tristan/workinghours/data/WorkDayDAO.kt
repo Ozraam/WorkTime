@@ -1,6 +1,7 @@
 package fr.tristan.workinghours.data
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -16,4 +17,7 @@ interface WorkDayDAO {
 
     @Query("SELECT * FROM work_day")
     fun getAll(): Flow<List<WorkDay>>
+
+    @Delete
+    suspend fun delete(workDay: WorkDay)
 }

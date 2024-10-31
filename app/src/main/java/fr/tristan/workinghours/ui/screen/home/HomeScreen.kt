@@ -1,5 +1,6 @@
 package fr.tristan.workinghours.ui.screen.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -72,7 +74,7 @@ fun HomeScreen(
             }
         } else {
             Column(modifier = Modifier.padding(it)) {
-                if (dayViewModel.getTodayWorkDay() != null)
+                if (dayViewModel.getTodayWorkDay() != null) {
                     TodayWorkDay(
                         day = uiState.listOfDay.last(),
                         modifier = Modifier.padding(8.dp),
@@ -82,6 +84,16 @@ fun HomeScreen(
                             provisionalTime
                         )
                     )
+                } else {
+                    TodayAddNewHelper(
+                        modifier = Modifier.padding(8.dp),
+                        onClick = {
+                            addExpanded = true
+                            dayViewModel.setTimeToCurrent()
+                            dayViewModel.detectTypeOfHour()
+                        }
+                    )
+                }
 
                 Text(
                     stringResource(R.string.all_work_day),
@@ -118,6 +130,20 @@ fun HomeScreen(
                 }
             )
         }
+    }
+}
+
+@Composable
+fun TodayAddNewHelper(modifier: Modifier, onClick: () -> Unit) {
+    Card(
+        modifier = modifier.clickable { onClick() }
+    ) {
+        Text(
+            stringResource(R.string.today_add_new_helper),
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(8.dp).align(Alignment.CenterHorizontally),
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -213,5 +239,24 @@ fun AddFloatingActionButton(modifier: Modifier = Modifier, onClick: () -> Unit) 
 fun PreviewTopAppBar() {
     WorkingHoursTheme {
         WorkingTopAppBar(onSettingsClick = {})
+    }
+}
+
+@Preview
+@Composable
+fun PreviewFirstTimeHelper() {
+    WorkingHoursTheme {
+        FirstTimeHelper()
+    }
+}
+
+@Preview
+@Composable
+fun PreviewAddTodayWorkDay() {
+    WorkingHoursTheme {
+        TodayAddNewHelper(
+            modifier = Modifier.padding(8.dp),
+            onClick = {}
+        )
     }
 }

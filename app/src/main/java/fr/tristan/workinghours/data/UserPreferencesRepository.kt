@@ -37,6 +37,5 @@ open class UserPreferencesRepository(
 
     private companion object {
         val WORK_TIME = intPreferencesKey("work_time")
-        const val TAG = "UserPreferencesRepo"
     }
 }

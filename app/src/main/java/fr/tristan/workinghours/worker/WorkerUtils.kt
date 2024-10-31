@@ -48,7 +48,7 @@ fun makeStatusNotification(message: String, context: Context) {
     if (!isNotificationsGranted(context)) {
         return
     } else
-    NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build())
+        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build())
 }
 
 fun isNotificationsGranted(context: Context) : Boolean {

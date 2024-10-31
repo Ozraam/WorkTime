@@ -221,7 +221,10 @@ class DayViewModel(
             HourType.WORK_IN -> workDay.workIn = dateAndType.date
             HourType.WORK_OUT -> workDay.workOut = dateAndType.date
             HourType.LUNCH_IN -> workDay.lunchIn = dateAndType.date
-            HourType.LUNCH_OUT -> workDay.lunchOut = dateAndType.date
+            HourType.LUNCH_OUT -> {
+                sendLeaveNotification()
+                workDay.lunchOut = dateAndType.date
+            }
         }
 
         if (isNewDay) {
@@ -240,19 +243,17 @@ class DayViewModel(
     }
 
     fun getTodayWorkDay(): WorkDay? {
+        // return dayListUiState.value.listOfDay.last()
         return dayListUiState.value.listOfDay.find { it.date == getCurrentDay() }
     }
 
-    fun sendNotif() {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 13)
-        calendar.set(Calendar.MINUTE, 30)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        val date = calendar.time
+    private fun sendLeaveNotification() {
+        val todayWorkDay = getTodayWorkDay()
 
-        val delay = date.time - System.currentTimeMillis()
+        val workOutTime = getPrevisionDate(todayWorkDay!!, timeSettingsState.value, 0)
 
+        val delay = workOutTime.time - System.currentTimeMillis()
+        Log.d("Delay", delay.toString())
         workManagerLeaveRepository.prepareLeave(delay)
     }
 

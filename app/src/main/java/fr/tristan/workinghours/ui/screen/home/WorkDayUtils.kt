@@ -63,7 +63,12 @@ fun groupDatesByWeek(dates: List<WorkDay>): List<Pair<Pair<Date, Date>, List<Wor
     }.sortedBy { it.first.first }
 }
 
-fun getPrevision(day: WorkDay, provisionalTime: Int, weekOvertime: Int): String {
+fun getPrevision(day: WorkDay, provisionalTime: Int, weekOvertime: Int) : String {
+    val format = SimpleDateFormat.getTimeInstance()
+    return format.format(getPrevisionDate(day, provisionalTime, weekOvertime))
+}
+
+fun getPrevisionDate(day: WorkDay, provisionalTime: Int, weekOvertime: Int): Date {
     val workIn = day.workIn
     val lunchIn = if(day.lunchIn.time == 0L) {
         val calendar = Calendar.getInstance()
@@ -106,8 +111,8 @@ fun getPrevision(day: WorkDay, provisionalTime: Int, weekOvertime: Int): String 
     calendar.set(Calendar.HOUR_OF_DAY, workOutInt / 3600)
     calendar.set(Calendar.MINUTE,(workOutInt % 3600) / 60)
     calendar.set(Calendar.SECOND, workOutInt % 60)
-    val format = SimpleDateFormat.getTimeInstance()
-    return format.format(calendar.time)
+
+    return calendar.time
 }
 
 fun formatTimeOrSayNotSetEpoch(date: Date, context: Context) : String {

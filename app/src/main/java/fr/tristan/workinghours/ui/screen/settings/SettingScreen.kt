@@ -128,10 +128,6 @@ fun SettingsScreen(
                     }
                 }
             }
-
-            Button(onClick = { dayViewModel.sendNotif() }) {
-                Text(text = "notif")
-            }
         }
 
     }

@@ -33,4 +33,5 @@
     <string name="time_to_go">Ding Dong ! It\'s time to leave your work place</string>
     <string name="ask_for_notification_permission">You can turn notifications on to be alerted when you did your work time</string>
     <string name="enable">Enable notifications</string>
+    <string name="today_add_new_helper">There is no work register for today yet.\nClick this card to add one !</string>
 </resources>

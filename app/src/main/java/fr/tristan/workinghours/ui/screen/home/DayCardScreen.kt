@@ -11,6 +11,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -18,6 +19,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.AlertDialog
@@ -26,8 +29,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,13 +43,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import fr.tristan.workinghours.R
 import fr.tristan.workinghours.data.WorkDay
 import fr.tristan.workinghours.data.getWorkTimeInSecond
+import fr.tristan.workinghours.ui.screen.settings.canInputBeBiggerIfTrailingNumber
 import fr.tristan.workinghours.ui.theme.WorkingHoursTheme
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 
 @SuppressLint("SimpleDateFormat")
@@ -155,6 +165,7 @@ fun DayCard(
     }
 }
 
+@SuppressLint("SimpleDateFormat")
 @Composable
 fun DaySubRail(
     day: WorkDay,
@@ -285,62 +296,175 @@ fun DayCardList(
     provisionalTime: Int,
     onEditRequest: (day: Date) -> Unit,
     onDeleteRequest: (day: WorkDay) -> Unit,
+    onSearchValueChange: (value: String) -> Unit,
     modifier: Modifier = Modifier,
+    search: String = "",
 ) {
-    val groupedDates = groupDatesByWeek(days)
+    val groupedDates = groupDatesByWeek(days).reversed().map { week ->
+        val currentDay = Date()
 
-    AnimatedVisibility(
-        visible = days.isNotEmpty(),
+        val thisWeek = getWeekRange(currentDay)
+        val weekReversed = if(week.first == thisWeek) week.second.reversed() else week.second
+        week.first to weekReversed.filter {
+
+            if(search.isEmpty()) return@filter true
+
+            val filteringDate = completeDateStringIfNecessary(search).toDate()
+            val calendar = Calendar.getInstance()
+            if (filteringDate != null) {
+                calendar.time = filteringDate
+            }
+
+            val calendarDay = Calendar.getInstance()
+            calendarDay.time = it.date
+
+            val searchPart = search.split("/").filter { date -> date.isNotEmpty() }
+            if (searchPart.size == 1) {
+                calendar.set(Calendar.MONTH, calendarDay.get(Calendar.MONTH))
+                calendar.set(Calendar.YEAR, calendarDay.get(Calendar.YEAR))
+            }
+            if (searchPart.size == 2) {
+                calendar.set(Calendar.YEAR, calendarDay.get(Calendar.YEAR))
+            }
+
+            calendar.get(Calendar.DAY_OF_MONTH) == calendarDay.get(Calendar.DAY_OF_MONTH) &&
+                    calendar.get(Calendar.MONTH) == calendarDay.get(Calendar.MONTH) &&
+                    calendar.get(Calendar.YEAR) == calendarDay.get(Calendar.YEAR)
+        }
+    }.filter {
+        it.second.isNotEmpty()
+    }
+
+    var textFieldValueState by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = search
+            )
+        )
+    }
+
+    Column(
         modifier = modifier,
-        enter = fadeIn(
-            animationSpec = spring(dampingRatio = DampingRatioLowBouncy)
-        ),
-        exit = fadeOut()
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxHeight(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(8.dp),
-        ) {
-            items(groupedDates) { week ->
-                val weekOvertime = getWeekOvertimeInt(week.second, provisionalTime)
-                Text(stringResource(R.string.week, formatWeekToString(week.first)))
-                Text(
-                    stringResource(R.string.week_summary, getWeekSummary(week.second)),
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    stringResource(R.string.week_overtime, getWeekOvertime(week.second, provisionalTime)),
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Column {
-                    for ((index, day) in week.second.withIndex()) {
-                        DayCard(
-                            day,
-                            provisionalTime = provisionalTime,
-                            weekOvertime = weekOvertime,
-                            onEditRequest = onEditRequest,
-                            onDeleteRequest = onDeleteRequest,
+        TextField(
+            value = textFieldValueState,
+            onValueChange = {
+                val isDelete = it.text.length < search.length
+                if (it.text.length <= search.length + 1) {
+                    val newText = formatInputDateText(it.text, isDelete)
+                    onSearchValueChange(newText)
 
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .animateEnterExit(
-                                    enter = slideInVertically(
-                                        animationSpec = spring(
-                                            stiffness = StiffnessLow,
-                                            dampingRatio = DampingRatioLowBouncy
-                                        ),
-                                        initialOffsetY = { it * (index + 1) }
-                                    )
-                                )
-                        )
-                    }
+                    textFieldValueState = textFieldValueState.copy(
+                        text = newText,
+                        selection = TextRange(newText.length)
+                    )
                 }
+            },
+            label = { Text(stringResource(R.string.search)) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(0),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number
+            ),
+        )
 
+        AnimatedVisibility(
+            visible = days.isNotEmpty(),
+            enter = fadeIn(
+                animationSpec = spring(dampingRatio = DampingRatioLowBouncy)
+            ),
+            exit = fadeOut()
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxHeight(),
+                contentPadding = PaddingValues(8.dp),
+            ) {
+                items(groupedDates) { week ->
+                    val weekOvertime = getWeekOvertimeInt(week.second, provisionalTime)
+                    Text(stringResource(R.string.week, formatWeekToString(week.first)))
+                    Text(
+                        stringResource(R.string.week_summary, getWeekSummary(week.second)),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text(
+                        stringResource(
+                            R.string.week_overtime,
+                            getWeekOvertime(week.second, provisionalTime)
+                        ),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Column {
+                        for ((index, day) in week.second.withIndex()) {
+                            DayCard(
+                                day,
+                                provisionalTime = provisionalTime,
+                                weekOvertime = weekOvertime,
+                                onEditRequest = onEditRequest,
+                                onDeleteRequest = onDeleteRequest,
+
+                                modifier = Modifier
+                                    .padding(vertical = 8.dp)
+                                    .animateEnterExit(
+                                        enter = slideInVertically(
+                                            animationSpec = spring(
+                                                stiffness = StiffnessLow,
+                                                dampingRatio = DampingRatioLowBouncy
+                                            ),
+                                            initialOffsetY = { it * (index + 1) }
+                                        )
+                                    )
+                            )
+                        }
+                    }
+
+                }
             }
         }
     }
 }
 
+fun formatInputDateText(input: String, isDelete: Boolean): String {
+
+    val parts = input.split("/").toMutableList()
+    if (isDelete) {
+        if (parts.last().length == 2 && parts.size < 3) {
+            parts[parts.lastIndex] = parts[parts.lastIndex].dropLast(1)
+        }
+
+        return parts.joinToString("/")
+    }
+
+    if (parts.size < 3 && parts.last().isNotEmpty()) {
+        if (parts.size == 1) {
+            if (parts.last().toInt() > 31) {
+                parts[parts.lastIndex] = "31"
+            }
+            if (!canInputBeBiggerIfTrailingNumber(parts.last(), 31)) {
+                parts[parts.lastIndex] = parts[parts.lastIndex].padStart(2, '0')
+            }
+        } else {
+            if (parts.last().toInt() > 12) {
+                parts[parts.lastIndex] = "12"
+            }
+            if (!canInputBeBiggerIfTrailingNumber(parts.last(), 12)) {
+                parts[parts.lastIndex] = parts[parts.lastIndex].padStart(2, '0')
+            }
+        }
+    }
+
+
+    if (parts.size < 3) {
+        if (parts.last().length == 2) {
+            parts.add("")
+        }
+    } else {
+        if (parts.last().length > 4) {
+            parts[2] = parts[2].substring(0, 4)
+        }
+    }
+
+    return parts.joinToString("/")
+}
 
 @Preview(showBackground = true)
 @Composable
@@ -402,7 +526,9 @@ fun WorkDayList() {
             ),
             provisionalTime = 2520000,
             onEditRequest = {},
-            onDeleteRequest = {}
+            onDeleteRequest = {},
+            search = "",
+            onSearchValueChange = {}
         )
     }
 }

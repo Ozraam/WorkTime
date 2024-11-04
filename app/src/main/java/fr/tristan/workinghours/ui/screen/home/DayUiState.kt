@@ -17,7 +17,6 @@ data class DateAndType(
 )
 
 fun DayUiState.toDate() : DateAndType {
-
     val calendar = Calendar.getInstance()
 
     val hour = this.hour.toInt()

@@ -4,6 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.icu.util.Calendar
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -27,6 +30,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.time.Instant
 import java.util.Date
 
 class DayViewModel(
@@ -36,6 +40,8 @@ class DayViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(DayUiState())
     val uiState: StateFlow<DayUiState> = _uiState.asStateFlow()
+
+    var userSearchInput by mutableStateOf("")
 
     val timeSettingsState: StateFlow<Int> =
         userPreferencesRepository.workTimeFlow.stateIn(
@@ -306,6 +312,10 @@ class DayViewModel(
 
     suspend fun deleteWorkDay(workDay: WorkDay) {
         workDayRepository.delete(workDay)
+    }
+
+    fun updateSearch(value: String) {
+        userSearchInput = value
     }
 }
 

@@ -52,7 +52,6 @@ fun getWeekRange(date: Date): Pair<Date, Date> {
 }
 
 fun groupDatesByWeek(dates: List<WorkDay>): List<Pair<Pair<Date, Date>, List<WorkDay>>> {
-
     val groupedDates = dates.groupBy { date ->
         val weekRange = getWeekRange(date.date)
         weekRange
@@ -142,10 +141,32 @@ fun Date.toHoursMinutesSeconds(): String {
     return String.format("%02d:%02d:%02d", hours, minutes, seconds)
 }
 
+@SuppressLint("SimpleDateFormat")
+fun String.toDate(): Date? {
+    val dateFormat = SimpleDateFormat("dd/MM/yyyy")
+    return dateFormat.parse(this)
+}
+
 fun getWeekSummary(workDays: List<WorkDay>): String {
     var totalTime = Date.from(Instant.EPOCH)
     for (day in workDays) {
         totalTime = Date(totalTime.time + day.getWorkTime().time)
     }
     return totalTime.toHoursMinutesSeconds()
+}
+
+fun completeDateStringIfNecessary(date: String): String {
+    val dateParts = date.split("/")
+
+    val epoch = Date.from(Instant.EPOCH)
+    val calendar = android.icu.util.Calendar.getInstance()
+    calendar.time = epoch
+
+    val day = dateParts[0]
+    val month = dateParts.getOrNull(1) ?: (calendar.get(Calendar.MONTH) + 1).toString().padStart(2, '0')
+    var year = dateParts.getOrNull(2) ?: calendar.get(Calendar.YEAR).toString()
+
+    if (year.isEmpty()) year = calendar.get(Calendar.YEAR).toString()
+
+    return "${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}"
 }

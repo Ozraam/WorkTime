@@ -1,6 +1,5 @@
 package fr.tristan.workinghours.ui.screen.settings
 
-import android.widget.Space
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,13 +7,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,9 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -41,7 +36,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import fr.tristan.workinghours.R
 import fr.tristan.workinghours.ui.screen.home.DayViewModel
 
@@ -75,13 +69,15 @@ fun SettingsScreen(
                     style = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp),
                     modifier = Modifier
                 )
-                Row {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     TextField(
                         value = textFieldValueState,
                         onValueChange = {
                             val isDelete = it.text.length < uiState.userInputWorkTime.length
                             if (it.text.length <= uiState.userInputWorkTime.length + 1) {
-                                val newText = formatInputText(it.text, isDelete)
+                                val newText = formatInputTimeText(it.text, isDelete)
                                 dayViewModel.updateProvisionalWorkTime(newText)
                                 textFieldValueState = textFieldValueState.copy(
                                     text = newText,
@@ -101,6 +97,8 @@ fun SettingsScreen(
                         ),
                         modifier = Modifier
                     )
+
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     Button(onClick = { onSettingsTimeConfirm() }) {
                         Text(stringResource(R.string.confirm))
@@ -133,7 +131,7 @@ fun SettingsScreen(
     }
 }
 
-fun formatInputText(input: String, isDelete: Boolean): String {
+fun formatInputTimeText(input: String, isDelete: Boolean): String {
 
     val parts = input.split(":").toMutableList()
     if (isDelete) {

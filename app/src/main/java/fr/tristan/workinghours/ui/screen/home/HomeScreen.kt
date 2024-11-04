@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
@@ -72,7 +74,9 @@ fun HomeScreen(
                 FirstTimeHelper()
             }
         } else {
-            Column(modifier = Modifier.padding(it)) {
+            Column(
+                modifier = Modifier.padding(it)
+            ) {
                 if (dayViewModel.getTodayWorkDay() != null) {
                     TodayWorkDay(
                         day = uiState.listOfDay.last(),
@@ -120,6 +124,10 @@ fun HomeScreen(
                         coroutineScope.launch {
                             dayViewModel.deleteWorkDay(day)
                         }
+                    },
+                    search = dayViewModel.userSearchInput,
+                    onSearchValueChange = { value ->
+                        dayViewModel.updateSearch(value)
                     }
                 )
             }

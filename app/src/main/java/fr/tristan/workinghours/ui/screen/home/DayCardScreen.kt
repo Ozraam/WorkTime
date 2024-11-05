@@ -11,6 +11,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,7 +30,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -368,56 +368,67 @@ fun DayCardList(
             ),
         )
 
-        AnimatedVisibility(
-            visible = days.isNotEmpty(),
-            enter = fadeIn(
-                animationSpec = spring(dampingRatio = DampingRatioLowBouncy)
-            ),
-            exit = fadeOut()
+        CardList(days, groupedDates, provisionalTime, onEditRequest, onDeleteRequest)
+    }
+}
+
+@Composable
+private fun ColumnScope.CardList(
+    days: List<WorkDay>,
+    groupedDates: List<Pair<Pair<Date, Date>, List<WorkDay>>>,
+    provisionalTime: Int,
+    onEditRequest: (day: Date) -> Unit,
+    onDeleteRequest: (day: WorkDay) -> Unit
+) {
+    AnimatedVisibility(
+        visible = days.isNotEmpty(),
+        enter = fadeIn(
+            animationSpec = spring(dampingRatio = DampingRatioLowBouncy)
+        ),
+        exit = fadeOut()
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxHeight(),
+            contentPadding = PaddingValues(8.dp),
         ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxHeight(),
-                contentPadding = PaddingValues(8.dp),
-            ) {
-                items(groupedDates) { week ->
-                    val weekOvertime = getWeekOvertimeInt(week.second, provisionalTime)
-                    Text(stringResource(R.string.week, formatWeekToString(week.first)))
-                    Text(
-                        stringResource(R.string.week_summary, getWeekSummary(week.second)),
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    Text(
-                        stringResource(
-                            R.string.week_overtime,
-                            getWeekOvertime(week.second, provisionalTime)
-                        ),
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    Column {
-                        for ((index, day) in week.second.withIndex()) {
-                            DayCard(
-                                day,
-                                provisionalTime = provisionalTime,
-                                weekOvertime = weekOvertime,
-                                onEditRequest = onEditRequest,
-                                onDeleteRequest = onDeleteRequest,
+            items(groupedDates) { week ->
+                val weekOvertime = getWeekOvertimeInt(week.second, provisionalTime)
+                Text(stringResource(R.string.week, formatWeekToString(week.first)))
+                Text(
+                    stringResource(R.string.week_summary, getWeekSummary(week.second)),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    stringResource(
+                        R.string.week_overtime,
+                        getWeekOvertime(week.second, provisionalTime)
+                    ),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Column {
+                    for ((index, day) in week.second.withIndex()) {
+                        DayCard(
+                            day,
+                            provisionalTime = provisionalTime,
+                            weekOvertime = weekOvertime,
+                            onEditRequest = onEditRequest,
+                            onDeleteRequest = onDeleteRequest,
 
-                                modifier = Modifier
-                                    .padding(vertical = 8.dp)
-                                    .animateEnterExit(
-                                        enter = slideInVertically(
-                                            animationSpec = spring(
-                                                stiffness = StiffnessLow,
-                                                dampingRatio = DampingRatioLowBouncy
-                                            ),
-                                            initialOffsetY = { it * (index + 1) }
-                                        )
+                            modifier = Modifier
+                                .padding(vertical = 8.dp)
+                                .animateEnterExit(
+                                    enter = slideInVertically(
+                                        animationSpec = spring(
+                                            stiffness = StiffnessLow,
+                                            dampingRatio = DampingRatioLowBouncy
+                                        ),
+                                        initialOffsetY = { it * (index + 1) }
                                     )
-                            )
-                        }
+                                )
+                        )
                     }
-
                 }
+
             }
         }
     }

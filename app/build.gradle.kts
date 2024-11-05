@@ -75,6 +75,8 @@ dependencies {
 
     implementation(libs.androidx.work.runtime.ktx)
 
+    implementation(libs.vico.compose)
+
     implementation(libs.androidx.datastore.preferences)
 
     implementation(libs.androidx.room.runtime)

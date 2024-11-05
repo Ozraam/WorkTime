@@ -2,7 +2,6 @@ package fr.tristan.workinghours.ui.screen.home
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.icu.util.Calendar
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,7 +29,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.time.Instant
 import java.util.Date
 
 class DayViewModel(
@@ -194,18 +192,18 @@ class DayViewModel(
         }
     }
 
-    private fun getCurrentWorkDayIfExistOrNewOne() : Pair<WorkDay, Boolean> {
-        val currentDate = getCurrentDay()
-
-        // check if there is already a work day for today
-        val day = dayListUiState.value.listOfDay.find { it.date == currentDate }
-
-        val isNewDay = day == null
-
-        val workDay = day ?: WorkDay(currentDate)
-
-        return Pair(workDay, isNewDay)
-    }
+//    private fun getCurrentWorkDayIfExistOrNewOne() : Pair<WorkDay, Boolean> {
+//        val currentDate = getCurrentDay()
+//
+//        // check if there is already a work day for today
+//        val day = dayListUiState.value.listOfDay.find { it.date == currentDate }
+//
+//        val isNewDay = day == null
+//
+//        val workDay = day ?: WorkDay(currentDate)
+//
+//        return Pair(workDay, isNewDay)
+//    }
 
     private fun getWorkDayIfExistOrNewOne(date: Date) : Pair<WorkDay, Boolean> {
         val day = dayListUiState.value.listOfDay.find { it.date == date }

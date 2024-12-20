@@ -76,6 +76,8 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
 
     implementation(libs.vico.compose)
+    implementation(libs.vico.compose.m3)
+    implementation(libs.vico.core)
 
     implementation(libs.androidx.datastore.preferences)
 

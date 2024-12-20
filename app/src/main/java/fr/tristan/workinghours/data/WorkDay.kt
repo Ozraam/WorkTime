@@ -5,6 +5,7 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import fr.tristan.workinghours.ui.screen.home.normalizeDate
 import fr.tristan.workinghours.ui.screen.home.normalizeTime
+import fr.tristan.workinghours.ui.screen.home.toHoursMinutesSeconds
 import java.time.Instant
 import java.util.Calendar
 import java.util.Date
@@ -58,4 +59,14 @@ fun WorkDay.getWorkTimeInSecond(): Int {
 
     val workTime = lunchIn - workIn + workOut - lunchOut
     return workTime
+}
+
+fun WorkDay.toCSV(): String {
+    return "${dateToString(date)},${normalizeTime(workIn).toHoursMinutesSeconds()},${normalizeTime(workOut).toHoursMinutesSeconds()},${normalizeTime(lunchIn).toHoursMinutesSeconds()},${normalizeTime(lunchOut).toHoursMinutesSeconds()}"
+}
+
+fun dateToString(date: Date): String {
+    val calendar = Calendar.getInstance()
+    calendar.time = date
+    return "${calendar.get(Calendar.YEAR)}-${calendar.get(Calendar.MONTH) + 1}-${calendar.get(Calendar.DAY_OF_MONTH)}"
 }

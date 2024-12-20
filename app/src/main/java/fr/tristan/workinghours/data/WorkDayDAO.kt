@@ -20,4 +20,7 @@ interface WorkDayDAO {
 
     @Delete
     suspend fun delete(workDay: WorkDay)
+
+    @Query("SELECT * FROM work_day")
+    fun getAllSync(): List<WorkDay>
 }

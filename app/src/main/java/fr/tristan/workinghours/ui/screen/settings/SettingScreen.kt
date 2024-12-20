@@ -1,5 +1,7 @@
 package fr.tristan.workinghours.ui.screen.settings
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,13 +22,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -36,8 +41,25 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLabelComponent
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLineComponent
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.core.cartesian.axis.Axis
+import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
+import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import fr.tristan.workinghours.R
+import fr.tristan.workinghours.data.WorkDay
+import fr.tristan.workinghours.data.getWorkTime
 import fr.tristan.workinghours.ui.screen.home.DayViewModel
+import fr.tristan.workinghours.ui.screen.home.isDayFinished
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(
@@ -46,6 +68,7 @@ fun SettingsScreen(
     onSettingsTimeConfirm: () -> Unit
 ) {
     val uiState by dayViewModel.uiSettingsState.collectAsState()
+    val dayUi by dayViewModel.dayListUiState.collectAsState()
     var textFieldValueState by remember {
         mutableStateOf(
             TextFieldValue(
@@ -53,6 +76,16 @@ fun SettingsScreen(
             )
         )
     }
+
+    if (uiState.dataExported != null) {
+        Toast.makeText(LocalContext.current, stringResource(R.string.data_exported,
+            uiState.dataExported!!
+        ), Toast.LENGTH_SHORT).show()
+        dayViewModel.resetDataExported()
+    }
+
+    val coroutineScope = rememberCoroutineScope()
+
     Scaffold(
         topBar = { SettingsTopAppBar(onBackClick) },
         modifier = Modifier.safeDrawingPadding()
@@ -112,9 +145,9 @@ fun SettingsScreen(
 
             val context = LocalContext.current
             if (!dayViewModel.isNotificationEnabled(context)) {
-                Row (
+                Row(
                     modifier = Modifier.padding(8.dp)
-                ){
+                ) {
                     Text(
                         text = stringResource(R.string.ask_for_notification_permission),
                         modifier = Modifier.weight(1f)
@@ -126,10 +159,81 @@ fun SettingsScreen(
                     }
                 }
             }
+
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
+
+            Row {
+                Text(
+                    text = stringResource(R.string.export_data),
+                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp),
+                    modifier = Modifier.padding(8.dp)
+                )
+
+                Spacer(
+                    modifier = Modifier.weight(1f)
+                )
+
+                Button(onClick = {
+                    dayViewModel.exportData(context)
+                }) {
+                    Text(text = stringResource(R.string.export))
+                }
+            }
+
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
+
+            Text(
+                text = stringResource(R.string.work_time_by_day),
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp),
+                modifier = Modifier.padding(8.dp)
+            )
+
+            val modelProducer = remember { CartesianChartModelProducer() }
+
+            LaunchedEffect(Unit) {
+                modelProducer.runTransaction {
+                    lineSeries {
+                        series(
+                            getDayByDayWorkTime(dayUi.listOfDay)
+                        )
+                    }
+                }
+            }
+            CartesianChartHost(
+                rememberCartesianChart(
+                    rememberLineCartesianLayer(),
+                    startAxis = VerticalAxis.rememberStart(
+                        title = "Hours",
+                        titleComponent = rememberAxisLabelComponent(),
+                        itemPlacer = remember { VerticalAxis.ItemPlacer.count() },
+                    ),
+                    bottomAxis = HorizontalAxis.rememberBottom(),
+
+                ),
+                modelProducer,
+
+                )
         }
 
     }
 }
+
+fun getDayByDayWorkTime(days: List<WorkDay>): List<Float> {
+
+    val daysCompleted = days.filter { isDayFinished(it) }
+    val dayTimeList: MutableList<Float> = mutableListOf()
+
+    for (day in daysCompleted) {
+        dayTimeList.add(day.getWorkTime().time.toFloat() / 1000 / 60 / 60)
+    }
+
+    return dayTimeList.toList()
+}
+
 
 fun formatInputTimeText(input: String, isDelete: Boolean): String {
 

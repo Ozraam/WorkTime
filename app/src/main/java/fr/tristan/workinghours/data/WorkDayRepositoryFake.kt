@@ -1,5 +1,6 @@
 package fr.tristan.workinghours.data
 
+import android.content.Context
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -26,5 +27,15 @@ class WorkDayRepositoryFake(private var workdays: List<WorkDay>) : WorkDayReposi
 
     override suspend fun delete(workDay: WorkDay) {
         workdays -= workDay
+    }
+
+    override suspend fun exportData(context: Context, callback: (String) -> Unit) {
+        val csv = workdays.joinToString("\n") { it.toCSV() }
+        val filename = "workdays.csv"
+        val csvHeader = "date, start, end, launchStart, launchEnd"
+        context.openFileOutput(filename, Context.MODE_PRIVATE).use {
+            it.write(csvHeader.toByteArray())
+            it.write(csv.toByteArray())
+        }
     }
 }

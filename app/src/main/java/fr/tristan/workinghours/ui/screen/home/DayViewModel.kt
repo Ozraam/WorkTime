@@ -20,6 +20,7 @@ import fr.tristan.workinghours.data.WorkDayRepository
 import fr.tristan.workinghours.ui.screen.settings.UiSettingsState
 import fr.tristan.workinghours.worker.enabledNotifications
 import fr.tristan.workinghours.worker.isNotificationsGranted
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -314,6 +315,29 @@ class DayViewModel(
 
     fun updateSearch(value: String) {
         userSearchInput = value
+    }
+
+    fun exportData(context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            workDayRepository.exportData(
+                context,
+                callback = { path ->
+                    this@DayViewModel._uiSettingsState.update {
+                        it.copy(
+                            dataExported = path
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    fun resetDataExported() {
+        this._uiSettingsState.update {
+            it.copy(
+                dataExported = null
+            )
+        }
     }
 }
 
